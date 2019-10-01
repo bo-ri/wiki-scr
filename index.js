@@ -4,11 +4,7 @@ const UNIV_LIST_URL = 'https://ja.wikipedia.org/wiki/%E6%97%A5%E6%9C%AC%E3%81%AE
 const TARGET_ATR = ".mw-parser-output > ul > li > a";
 
 // list all university
-const listAllUniv = async function () {
-  const browser = await puppeteer.launch({
-    args: ['--no-sandbox']
-  });
-  const page = await browser.newPage();
+const listAllUniv = async function (page) {
   await page.goto(UNIV_LIST_URL);
   // 大学名一覧が表示されるまで待つ
   await page.waitFor(TARGET_ATR);
@@ -25,12 +21,17 @@ const listAllUniv = async function () {
     }
     return datas;
   }, TARGET_ATR);
-  console.log(data);
-  await browser.close();
+  return data;
 }
 
 async function main() {
-  await listAllUniv();
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox']
+  });
+  const page = await browser.newPage();
+  const univs = await listAllUniv(page);
+
+  browser.close();
 }
 
 main();
