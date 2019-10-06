@@ -1,7 +1,12 @@
 const puppeteer = require('puppeteer');
+const MeCab = require('mecab-async');
+const mecab = new MeCab();
  
 const UNIV_LIST_URL = 'https://ja.wikipedia.org/wiki/%E6%97%A5%E6%9C%AC%E3%81%AE%E5%A4%A7%E5%AD%A6%E4%B8%80%E8%A6%A7';
 const TARGET_ATR = ".mw-parser-output > ul > li > a";
+const TAGS = {
+  OUTER_CONTENT: '.mw-parser-output'
+};
 
 // list all university
 const listAllUniv = async function (page) {
@@ -24,13 +29,38 @@ const listAllUniv = async function (page) {
   return data;
 }
 
+// 大学のページをスクレイピング
+const scrapeUnivData = async function (page, univ) {
+  await page.goto(univ.href)
+  console.log("go to ", univ.textContent);
+  const outerContent = await page.evaluate((selector) => {
+    const list = Array.from(document.querySelectorAll(selector));
+    // return list.map(data => data.textContent);
+    return list.map(data => data.textContent);
+  }, TAGS.OUTER_CONTENT);
+  analyzeText(outerContent[0]);
+}
+
+async function analyzeText (data) {
+  mecab.parse(data, function(err, result) {
+    if (err) {
+      console.log('ERROR: ', err);
+    }
+    console.log('RESULT: ', result);
+  })
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox']
   });
   const page = await browser.newPage();
   const univs = await listAllUniv(page);
-
+  // 一個ずつ処理する
+  // univs.map(univ => {
+  //   await scrapeUnivData(page, univ);
+  // })
+  await scrapeUnivData(page, univs[0])
   browser.close();
 }
 
