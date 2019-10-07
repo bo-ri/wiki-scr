@@ -1,4 +1,6 @@
 const puppeteer = require('puppeteer');
+const textUtil = require('./libs/analyzeText');
+const fs = require('fs');
 const MeCab = require('mecab-async');
 const mecab = new MeCab();
  
@@ -33,21 +35,41 @@ const listAllUniv = async function (page) {
 const scrapeUnivData = async function (page, univ) {
   await page.goto(univ.href)
   console.log("go to ", univ.textContent);
+  const univName = univ.textContent;
   const outerContent = await page.evaluate((selector) => {
     const list = Array.from(document.querySelectorAll(selector));
     // return list.map(data => data.textContent);
     return list.map(data => data.textContent);
   }, TAGS.OUTER_CONTENT);
-  analyzeText(outerContent[0]);
+  analyzeText(outerContent[0], univName);
 }
 
-async function analyzeText (data) {
+async function analyzeText (data, univName) {
   mecab.parse(data, function(err, result) {
     if (err) {
       console.log('ERROR: ', err);
     }
-    console.log('RESULT: ', result);
-  })
+    // console.log('RESULT: ', result);
+    result.map((word) => {
+      console.log(textUtil.notAllConditions(word))
+      if (textUtil.notAllConditions(word)) {
+        let line = '';
+        let length = word.length - 1;
+        word.map((element, index) => {
+          if (index === length) {
+            line += element + '\n';
+          } else {
+            line += element + ',';
+          }
+        });
+        console.log('line: ', line);
+        // fs.appendFile(`./data/${univName}.csv`, line, (err) => {
+        fs.appendFile('./data/' + univName + '.csv', line, (err) => {
+          if (err) return err;
+        });
+      }
+    });
+  });
 }
 
 async function main() {
