@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  topic:
+    build:
+      context: .
+    volumes:
+      - '.:/root/topic'
+      - './../data/:/root/data'
+    tty: true
+

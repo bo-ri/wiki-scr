@@ -82,11 +82,11 @@ async function main() {
   const page = await browser.newPage();
   const univs = await listAllUniv(page);
   // 一個ずつ処理する
-  // univs.map(univ => {
-  //   await scrapeUnivData(page, univ);
-  //   await sleep(1000);
-  // });
-  await scrapeUnivData(page, univs[0])
+  univs.map(univ => {
+    await scrapeUnivData(page, univ);
+    await sleep(1000);
+  });
+  // await scrapeUnivData(page, univs[0])
   browser.close();
 }
 
