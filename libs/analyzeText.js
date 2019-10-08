@@ -39,6 +39,25 @@ exports.isNumber = function (data) {
   }
 }
 
+exports.isVerb = function (data) {
+  if (data[1] === '動詞') {
+    return true;
+  } else if (data[1] === '助動詞') {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+// 接続詞，連体詞を弾く
+exports.isConAndRen = function (data) {
+  if (data[1] === '接続詞' || data[1] === '連体詞') {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // 上で定義した全ての条件に該当しない場合
 // あとEOSも弾いておく
 exports.notAllConditions = function (data) {
@@ -50,7 +69,20 @@ exports.notAllConditions = function (data) {
     return false;
   } else if (data[0] === 'EOS') {
     return false;
+  } else if (this.isVerb(data)) {
+    return false;
   } else {
     return true;
+  }
+}
+
+exports.isNoun = function (data) {
+  if (data[1] === '名詞') {
+    if (this.isSymbol(data)) {
+      return false;
+    }
+    return true;
+  } else {
+    return false;
   }
 }

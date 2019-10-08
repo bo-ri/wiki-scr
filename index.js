@@ -51,8 +51,7 @@ async function analyzeText (data, univName) {
     }
     // console.log('RESULT: ', result);
     result.map((word) => {
-      console.log(textUtil.notAllConditions(word))
-      if (textUtil.notAllConditions(word)) {
+      if (textUtil.isNoun(word)) {
         let line = '';
         let length = word.length - 1;
         word.map((element, index) => {
@@ -63,8 +62,7 @@ async function analyzeText (data, univName) {
           }
         });
         console.log('line: ', line);
-        // fs.appendFile(`./data/${univName}.csv`, line, (err) => {
-        fs.appendFile('./data/' + univName + '.csv', line, (err) => {
+        fs.appendFile(`./data/${univName}.csv`, line, (err) => {
           if (err) return err;
         });
       }
