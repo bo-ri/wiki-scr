@@ -70,6 +70,11 @@ async function analyzeText (data, univName) {
   });
 }
 
+// 常識の範囲でsleep
+async function sleep(delay) {
+  return new Promise(resolve => setTimeout(resolve, delay));
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox']
@@ -79,7 +84,8 @@ async function main() {
   // 一個ずつ処理する
   // univs.map(univ => {
   //   await scrapeUnivData(page, univ);
-  // })
+  //   await sleep(1000);
+  // });
   await scrapeUnivData(page, univs[0])
   browser.close();
 }
