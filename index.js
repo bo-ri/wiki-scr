@@ -3,6 +3,10 @@ const textUtil = require('./libs/analyzeText');
 const fs = require('fs');
 const MeCab = require('mecab-async');
 const mecab = new MeCab();
+
+mecab.options = {
+  maxBuffer: 1024 * 1024 * 100
+};
  
 const UNIV_LIST_URL = 'https://ja.wikipedia.org/wiki/%E6%97%A5%E6%9C%AC%E3%81%AE%E5%A4%A7%E5%AD%A6%E4%B8%80%E8%A6%A7';
 const TARGET_ATR = ".mw-parser-output > ul > li > a";
@@ -82,12 +86,12 @@ async function main() {
   const page = await browser.newPage();
   const univs = await listAllUniv(page);
   // 一個ずつ処理する
-  univs.map(async function(univ){
-    await scrapeUnivData(page, univ);
+  for (let i = 0; i < univs.length; i++) {
+    await scrapeUnivData(page, univs[i]);
     await sleep(1000);
-  });
-  // await scrapeUnivData(page, univs[0])
-  browser.close();
+  }
+  // await scrapeUnivData(page, univs[1])
+  await browser.close();
 }
 
 main();
