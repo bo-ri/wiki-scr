@@ -45,33 +45,46 @@ const scrapeUnivData = async function (page, univ) {
     // return list.map(data => data.textContent);
     return list.map(data => data.textContent);
   }, TAGS.OUTER_CONTENT);
-  analyzeText(outerContent[0], univName);
+
+  const texts = outerContent[0].split('\n');
+  for(let i = 0; i < texts.length; i++) {
+    if (texts[i] === '' || texts[i] === ' ' || texts[i] === '　') {
+      continue;
+    }
+    console.log(`texts[ ${i} ]`, texts[i]);
+    await analyzeText(texts[i], univName);
+  }
 }
 
+// 形態素解析してcsvに出力する
 async function analyzeText (data, univName) {
-  mecab.parse(data, function(err, result) {
-    if (err) {
-      console.log('ERROR: ', err);
-    }
-    // console.log('RESULT: ', result);
-    result.map((word) => {
-      if (textUtil.isNoun(word)) {
-        let line = '';
-        let length = word.length - 1;
-        word.map((element, index) => {
-          if (index === length) {
-            line += element + '\n';
-          } else {
-            line += element + ',';
+  return new Promise((resolve, reject) => {
+    mecab.parse(data, function(err, result) {
+      if (err) {
+        console.log('ERROR: ', err);
+      }
+      for (let i = 0; i < result.length; i++) {
+        result.map((word) => {
+          if (textUtil.isNoun(word)) {
+            let line = '';
+            let length = word.length - 1;
+            word.map((element, index) => {
+              if (index === length) {
+                line += element + '\n';
+              } else {
+                line += element + ',';
+              }
+            });
+            console.log('line: ', line);
+            fs.appendFile(`./data/${univName}.csv`, line, (err) => {
+              if (err) return err;
+            });
           }
         });
-        console.log('line: ', line);
-        fs.appendFile(`./data/${univName}.csv`, line, (err) => {
-          if (err) return err;
-        });
       }
+      return resolve();
     });
-  });
+  })
 }
 
 // 常識の範囲でsleep
