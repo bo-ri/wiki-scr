@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const textUtil = require('./libs/analyzeText');
-const fs = require('fs');
+// const fs = require('fs');
+const fs = require('graceful-fs');
 const MeCab = require('mecab-async');
 const mecab = new MeCab();
 
@@ -43,18 +44,10 @@ const scrapeUnivData = async function (page, univ) {
     const univName = univ.textContent;
     const outerContent = await page.evaluate((selector) => {
       const list = Array.from(document.querySelectorAll(selector));
-      // return list.map(data => data.textContent);
       return list.map(data => data.textContent);
     }, TAGS.OUTER_CONTENT);
 
     const texts = outerContent[0].split('\n');
-    // for(let i = 0; i < texts.length; i++) {
-    //   if (texts[i] === '' || texts[i] === ' ' || texts[i] === '　') {
-    //     continue;
-    //   }
-    //   console.log(`texts[ ${i} ]`, texts[i]);
-    //   await analyzeText(texts[i], univName);
-    // }
     const promises = texts.map(function(element, index){
       return new Promise(async function(resolve, reject) {
         if (element === '' || element === ' ' || element === '　') {
@@ -108,7 +101,7 @@ async function analyzeText (data, univName) {
           return resolve();
         })
         .catch((err) => {
-          return reject();
+          return reject(err);
         });
     });
   });
@@ -131,6 +124,7 @@ async function main() {
     await sleep(1000);
   }
   // await scrapeUnivData(page, univs[1])
+  // await scrapeUnivData(page, univs[21]); // 青山学院大学
   await browser.close();
 }
 
