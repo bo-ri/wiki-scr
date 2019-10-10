@@ -47,10 +47,10 @@ const scrapeUnivData = async function (page, univ) {
       return list.map(data => data.textContent);
     }, TAGS.OUTER_CONTENT);
     let texts;
-    if (outerContent[0] != null && outerContent[0] != undefined || outerContent[0] != '') {
+    if (outerContent[0] != null && outerContent[0] != undefined && outerContent[0] != '') {
       texts = outerContent[0].split('\n');
     } else {
-      resolve();
+      return resolve();
     }
     const promises = texts.map(function(element, index){
       return new Promise(async function(resolve, reject) {
@@ -59,7 +59,7 @@ const scrapeUnivData = async function (page, univ) {
         }
         console.log(`texts[ ${index} ]`, element);
         await analyzeText(element, univName);
-        resolve();
+        return resolve();
       });
     });
 
@@ -79,7 +79,7 @@ async function analyzeText (data, univName) {
     mecab.parse(data, function(err, result) {
       if (err) {
         console.log('ERROR: ', err);
-        reject(err);
+        return reject(err);
       }
       const promises = result.map((word) => {
         if (textUtil.isNoun(word)) {
@@ -124,6 +124,7 @@ async function main() {
   const univs = await listAllUniv(page);
   // 一個ずつ処理する
   for (let i = 0; i < univs.length; i++) {
+    console.log('university number -> ', i);
     await scrapeUnivData(page, univs[i]);
     await sleep(1000);
   }
