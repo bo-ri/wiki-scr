@@ -46,8 +46,12 @@ const scrapeUnivData = async function (page, univ) {
       const list = Array.from(document.querySelectorAll(selector));
       return list.map(data => data.textContent);
     }, TAGS.OUTER_CONTENT);
-
-    const texts = outerContent[0].split('\n');
+    let texts;
+    if (outerContent[0] != null && outerContent[0] != undefined || outerContent[0] != '') {
+      texts = outerContent[0].split('\n');
+    } else {
+      resolve();
+    }
     const promises = texts.map(function(element, index){
       return new Promise(async function(resolve, reject) {
         if (element === '' || element === ' ' || element === '　') {
