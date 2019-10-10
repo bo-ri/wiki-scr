@@ -37,23 +37,43 @@ const listAllUniv = async function (page) {
 
 // 大学のページをスクレイピング
 const scrapeUnivData = async function (page, univ) {
-  await page.goto(univ.href)
-  console.log("go to ", univ.textContent);
-  const univName = univ.textContent;
-  const outerContent = await page.evaluate((selector) => {
-    const list = Array.from(document.querySelectorAll(selector));
-    // return list.map(data => data.textContent);
-    return list.map(data => data.textContent);
-  }, TAGS.OUTER_CONTENT);
+  return new Promise(async function (resolve, reject) {
+    await page.goto(univ.href)
+    console.log("go to ", univ.textContent);
+    const univName = univ.textContent;
+    const outerContent = await page.evaluate((selector) => {
+      const list = Array.from(document.querySelectorAll(selector));
+      // return list.map(data => data.textContent);
+      return list.map(data => data.textContent);
+    }, TAGS.OUTER_CONTENT);
 
-  const texts = outerContent[0].split('\n');
-  for(let i = 0; i < texts.length; i++) {
-    if (texts[i] === '' || texts[i] === ' ' || texts[i] === '　') {
-      continue;
-    }
-    console.log(`texts[ ${i} ]`, texts[i]);
-    await analyzeText(texts[i], univName);
-  }
+    const texts = outerContent[0].split('\n');
+    // for(let i = 0; i < texts.length; i++) {
+    //   if (texts[i] === '' || texts[i] === ' ' || texts[i] === '　') {
+    //     continue;
+    //   }
+    //   console.log(`texts[ ${i} ]`, texts[i]);
+    //   await analyzeText(texts[i], univName);
+    // }
+    const promises = texts.map(function(element, index){
+      return new Promise(async function(resolve, reject) {
+        if (element === '' || element === ' ' || element === '　') {
+          resolve();
+        }
+        console.log(`texts[ ${index} ]`, element);
+        await analyzeText(element, univName);
+        resolve();
+      });
+    });
+
+    Promise.all(promises)
+      .then(() => {
+        resolve();
+      })
+      .catch((err) => {
+        reject(err)
+      })
+  })
 }
 
 // 形態素解析してcsvに出力する
@@ -62,29 +82,36 @@ async function analyzeText (data, univName) {
     mecab.parse(data, function(err, result) {
       if (err) {
         console.log('ERROR: ', err);
+        reject(err);
       }
-      for (let i = 0; i < result.length; i++) {
-        result.map((word) => {
-          if (textUtil.isNoun(word)) {
+      const promises = result.map((word) => {
+        if (textUtil.isNoun(word)) {
+          return new Promise((resolve, reject) => {
             let line = '';
-            let length = word.length - 1;
-            word.map((element, index) => {
-              if (index === length) {
-                line += element + '\n';
+            for (let i = 0; i < word.length; i++) {
+              if (i === word.length - 1) {
+                line += word[i] + '\n';
               } else {
-                line += element + ',';
+                line += word[i] + ',';
               }
-            });
-            console.log('line: ', line);
+            }
+            console.log('line: ' + line);
             fs.appendFile(`./data/${univName}.csv`, line, (err) => {
-              if (err) return err;
+              if (err) return reject(err);
+              return resolve();
             });
-          }
+          });
+        }
+      });
+      Promise.all(promises)
+        .then(() => {
+          return resolve();
+        })
+        .catch((err) => {
+          return reject();
         });
-      }
-      return resolve();
     });
-  })
+  });
 }
 
 // 常識の範囲でsleep
