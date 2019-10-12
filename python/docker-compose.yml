@@ -7,5 +7,6 @@ services:
     volumes:
       - '.:/root/topic'
       - './../data/:/root/data'
+      - './../innreContents/:/root/innerContents'
     tty: true
 
