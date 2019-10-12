@@ -4,6 +4,8 @@ services:
   mecab:
     build:
       context: .
+    container_name: 'puppeteer'
+    working_dir: '/root/wiki-scr'
     volumes:
       - '.:/root/wiki-scr'
     tty: true

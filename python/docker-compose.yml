@@ -4,6 +4,8 @@ services:
   topic:
     build:
       context: .
+    container_name: 'topic_model'
+    working_dir: '/root/topic'
     volumes:
       - '.:/root/topic'
       - './../data/:/root/data'
