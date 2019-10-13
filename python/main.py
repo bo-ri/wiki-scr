@@ -5,8 +5,11 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import os
 import copy
+import MeCab
 
-image_dir_path = Path('./image')
+m = MeCab.Tagger('-Ochasen')
+
+image_dir_path = Path('./images')
 corpus_dir_path = Path('./corpus')
 
 if not image_dir_path.exists():
@@ -25,12 +28,16 @@ stop_words_base = [u'てる', u'いる', u'なる', u'れる', u'する', u'あ�
 
 
 for file_name in files:
-  print(file_name)
+  print(file_name.split('_word_list')[0])
   stop_words = copy.deepcopy(stop_words_base)
-  stop_words.append(file_name)
+  stop_words.append(file_name.split('_word_list')[0])
   with open(corpus_dir_path.joinpath(file_name), 'r', encoding='utf-8') as file:
     text = file.readlines()
-  text = ' '.join(text).replace('\n','')
+  for word in text:
+    analyze = m.parse(word)
+    if (analyze[3] in '動詞'):
+      continue
+  text = ' '.join(text).replace('\n', '')
 
   wordcloud = WordCloud(background_color="white",
                         font_path='./font/ipag.ttf',
