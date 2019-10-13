@@ -15,4 +15,11 @@ ENV LANG ja_JP.UTF-8
 ENV LC_CTYPE ja_JP.UTF-8
 RUN localedef -f UTF-8 -i ja_JP ja_JP.utf8
 
-RUN pip install gensim janome wordcloud matplotlib
+RUN pip install gensim janome wordcloud matplotlib mecab-python3
+RUN apt-get install -y mecab libmecab-dev mecab-ipadic mecab-ipadic-utf8 sudo
+
+WORKDIR /root
+RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
+RUN ["/bin/sh", "-c", "/root/mecab-ipadic-neologd/bin/install-mecab-ipadic-neologd -n -a --forceyes"]
+WORKDIR /root/topic
+# RUN mecab -d /root/mecab-ipadic-neologd/build/mecab-ipadic-2.7.0-20070801-neologd-20190930
